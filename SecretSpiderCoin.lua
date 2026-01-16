@@ -1,13 +1,6 @@
--- ==================================================
--- Secret Spider Coin v10.0 (Turtle WoW / Vanilla)
--- Includes minimap icon and forced /ssc show fix
--- ==================================================
-
 SSC_PREFIX = "SSC"
 
--- ======================
 -- SavedVariables
--- ======================
 if not SecretSpiderCoinDB then
     SecretSpiderCoinDB = {
         balances = {},
@@ -18,9 +11,7 @@ if not SecretSpiderCoinDB then
     }
 end
 
--- ======================
--- Utilities
--- ======================
+-- Utility functions
 local function Player() return UnitName("player") end
 local function IsVanillaGuildMaster()
     if not IsInGuild() then return false end
@@ -31,9 +22,7 @@ local function IsGuildMaster() return SecretSpiderCoinDB.guildMaster == Player()
 local function IsAuthorized() return IsGuildMaster() or SecretSpiderCoinDB.distributors[Player()] end
 local function Log(msg) table.insert(SecretSpiderCoinDB.history, date("%H:%M:%S ") .. msg) end
 
--- ======================
--- Guild Master Lock
--- ======================
+-- Guild master lock
 local function InitGuildMaster()
     if not SecretSpiderCoinDB.guildMaster and IsVanillaGuildMaster() then
         SecretSpiderCoinDB.guildMaster = Player()
@@ -41,17 +30,13 @@ local function InitGuildMaster()
     end
 end
 
--- ======================
 -- Communication
--- ======================
 local function Broadcast(msg)
     if IsInGuild() then SendAddonMessage(SSC_PREFIX, msg, "GUILD") end
 end
 local function SendToChannel(msg, channel) SendChatMessage(msg, channel) end
 
--- ======================
--- Coin Logic
--- ======================
+-- Coin logic
 local function AddCoins(name, amount)
     local current = SecretSpiderCoinDB.balances[name] or 0
     local new = current + amount
@@ -62,9 +47,7 @@ local function AddCoins(name, amount)
     print("|cff00ff00[SSC]|r " .. math.abs(amount) .. " coins " .. action .. " for " .. name .. ". New balance: " .. new)
 end
 
--- ======================
 -- Announcements
--- ======================
 local function AnnounceBalance(name, channel)
     SendToChannel(name .. " has " .. (SecretSpiderCoinDB.balances[name] or 0) .. " Secret Spider Coins", channel)
 end
@@ -78,9 +61,7 @@ local function AnnounceTop10(channel)
     end
 end
 
--- ======================
--- Group Members
--- ======================
+-- Group members
 local function GetGroupMembers()
     local members = {}
     if GetNumRaidMembers() > 0 then
@@ -100,22 +81,20 @@ local function GetGroupMembers()
     return members
 end
 
--- ======================
--- Main Frame
--- ======================
+-- Frame and dropdowns
 local SSC_Frame, dropdown, selectedBox, amountBox, channelDropdown
-local function CreateSSCFrame()
-    if SSC_Frame then return end -- already created
 
+local function CreateSSCFrame()
+    if SSC_Frame then return end
     SSC_Frame = CreateFrame("Frame","SSC_MainFrame",UIParent)
     SSC_Frame:SetWidth(420)
     SSC_Frame:SetHeight(280)
-    SSC_Frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    SSC_Frame:SetPoint("CENTER", UIParent, "CENTER")
     SSC_Frame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 11, right = 12, top = 12, bottom = 11 }
+        bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile=true, tileSize=32, edgeSize=32,
+        insets={ left=11, right=12, top=12, bottom=11 }
     })
     SSC_Frame:EnableMouse(true)
     SSC_Frame:SetMovable(true)
@@ -127,15 +106,15 @@ local function CreateSSCFrame()
 
     -- Title
     local title = SSC_Frame:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
-    title:SetPoint("TOP",SSC_Frame,"TOP",0,-15)
+    title:SetPoint("TOP", SSC_Frame, "TOP", 0, -15)
     title:SetText("Secret Spider Coin")
 
-    -- Close [X]
+    -- Close button
     local closeBtn = CreateFrame("Button", nil, SSC_Frame, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", SSC_Frame, "TOPRIGHT", -5, -5)
     closeBtn:SetScript("OnClick", function() SSC_Frame:Hide() end)
 
-    -- Dropdown
+    -- Player dropdown
     SSC_Frame.selected = Player()
     dropdown = CreateFrame("Frame","SSC_Dropdown",SSC_Frame,"UIDropDownMenuTemplate")
     dropdown:SetPoint("TOPLEFT", SSC_Frame, "TOPLEFT", 20, -45)
@@ -143,7 +122,7 @@ local function CreateSSCFrame()
     selectedBox:SetPoint("LEFT", dropdown, "RIGHT", 20, 0)
     selectedBox:SetText("Selected: "..SSC_Frame.selected)
 
-    -- Amount Box
+    -- Amount
     amountBox = CreateFrame("EditBox", nil, SSC_Frame, "InputBoxTemplate")
     amountBox:SetPoint("TOPLEFT", dropdown, "BOTTOMLEFT", 0, -25)
     amountBox:SetWidth(80)
@@ -153,7 +132,7 @@ local function CreateSSCFrame()
     amountLabel:SetPoint("BOTTOM", amountBox, "TOP", 0, 5)
     amountLabel:SetText("Amount")
 
-    -- Channel Dropdown
+    -- Channel dropdown
     channelDropdown = CreateFrame("Frame","SSC_ChannelDropdown",SSC_Frame,"UIDropDownMenuTemplate")
     channelDropdown:SetPoint("LEFT", amountBox, "RIGHT", 20, 0)
     SSC_Frame.channel = "GUILD"
@@ -173,28 +152,23 @@ local function CreateSSCFrame()
         local amt = tonumber(amountBox:GetText())
         if amt then AddCoins(SSC_Frame.selected, amt) end
     end)
-
     MakeButton("Remove Coins", 90, -130, function()
         if not IsAuthorized() then return end
         local amt = tonumber(amountBox:GetText())
         if amt then AddCoins(SSC_Frame.selected, -amt) end
     end)
-
     MakeButton("Announce Balance", -90, -165, function()
         AnnounceBalance(SSC_Frame.selected, SSC_Frame.channel)
     end)
-
     MakeButton("Top 10", 90, -165, function()
         AnnounceTop10(SSC_Frame.channel)
     end)
 end
 
--- ======================
--- Refresh Dropdowns
--- ======================
+-- Dropdown refresh
 local function RefreshDropdown()
     if not SSC_Frame then return end
-    UIDropDownMenu_Initialize(dropdown, function(self, level)
+    UIDropDownMenu_Initialize(dropdown,function(self,level)
         local members = GetGroupMembers()
         for i,name in ipairs(members) do
             local info = {}
@@ -219,9 +193,9 @@ local function RefreshChannelDropdown()
     UIDropDownMenu_Initialize(channelDropdown,function(self,level)
         for i,ch in ipairs(channels) do
             local info={}
-            info.text = ch
-            info.value = ch
-            info.func = function()
+            info.text=ch
+            info.value=ch
+            info.func=function()
                 SSC_Frame.channel = ch
                 UIDropDownMenu_SetText(ch,channelDropdown)
             end
@@ -232,9 +206,7 @@ local function RefreshChannelDropdown()
     UIDropDownMenu_SetText(SSC_Frame.channel,channelDropdown)
 end
 
--- ======================
--- Force Open Function
--- ======================
+-- Force open
 local function OpenSSCFrame()
     if not SSC_Frame then CreateSSCFrame() end
     RefreshDropdown()
@@ -243,37 +215,18 @@ local function OpenSSCFrame()
 end
 
 -- ======================
--- Minimap Icon
--- ======================
-local LDBIcon = CreateFrame("Button", "SSC_MinimapButton", Minimap)
-LDBIcon:SetSize(30,30)
-LDBIcon:SetPoint("TOPLEFT", Minimap, "TOPLEFT")
-LDBIcon:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-local iconTexture = LDBIcon:CreateTexture(nil,"BACKGROUND")
-iconTexture:SetAllPoints()
-iconTexture:SetTexture("Interface\\Icons\\INV_Misc_Coin_01")
-LDBIcon:SetScript("OnClick", function() OpenSSCFrame() end)
-LDBIcon:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
-    GameTooltip:SetText("Secret Spider Coin")
-    GameTooltip:AddLine("Click to open menu")
-    GameTooltip:Show()
-end)
-LDBIcon:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
--- ======================
 -- Events
 -- ======================
 local f=CreateFrame("Frame")
-f:RegisterEvent("ADDON_LOADED")
+f:RegisterEvent("PLAYER_LOGIN")
 f:RegisterEvent("CHAT_MSG_ADDON")
 f:SetScript("OnEvent", function(_,event,arg1,arg2)
-    if event=="ADDON_LOADED" and arg1=="SecretSpiderCoin" then
+    if event=="PLAYER_LOGIN" then
         InitGuildMaster()
         RegisterAddonMessagePrefix(SSC_PREFIX)
-        if not SSC_Frame then CreateSSCFrame() end
+        CreateSSCFrame()
 
-        -- Slash Command fixed
+        -- Slash command
         SLASH_SSC1="/ssc"
         SlashCmdList["SSC"]=function(msg)
             msg=string.lower(msg)
@@ -286,11 +239,19 @@ f:SetScript("OnEvent", function(_,event,arg1,arg2)
             end
         end
 
-        print("|cff00ff00Secret Spider Coin loaded. Use /ssc show|r")
-    end
-
-    if event=="CHAT_MSG_ADDON" and arg1==SSC_PREFIX then
-        local cmd,name,amt=strsplit("|",arg2)
-        if cmd=="SET" then SecretSpiderCoinDB.balances[name]=tonumber(amt) end
-    end
-end)
+        -- Minimap icon
+        local LDBIcon = CreateFrame("Button", "SSC_MinimapButton", Minimap)
+        LDBIcon:SetSize(25,25)
+        LDBIcon:SetPoint("TOPLEFT", Minimap, "TOPLEFT")
+        LDBIcon:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+        local iconTexture = LDBIcon:CreateTexture(nil,"BACKGROUND")
+        iconTexture:SetAllPoints()
+        iconTexture:SetTexture("Interface\\Icons\\INV_Misc_Coin_01")
+        LDBIcon:SetScript("OnClick", function() OpenSSCFrame() end)
+        LDBIcon:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
+            GameTooltip:SetText("Secret Spider Coin")
+            GameTooltip:AddLine("Click to open menu")
+            GameTooltip:Show()
+        end)
+        LDBIcon:SetScript("OnLeave", function() GameTooltip:Hide() end)
