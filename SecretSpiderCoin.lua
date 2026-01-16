@@ -69,25 +69,35 @@ dropdown:SetPoint("TOPLEFT", 20, -50)
 local function GetPlayerList()
     local list = {}
 
-    if IsInRaid() then
+    if GetNumRaidMembers() > 0 then
         for i = 1, GetNumRaidMembers() do
             local name = GetRaidRosterInfo(i)
-            if name then table.insert(list, name) end
+            if name then
+                table.insert(list, name)
+            end
         end
+
     elseif GetNumPartyMembers() > 0 then
         table.insert(list, UnitName("player"))
         for i = 1, GetNumPartyMembers() do
-            table.insert(list, UnitName("party"..i))
+            local name = UnitName("party"..i)
+            if name then
+                table.insert(list, name)
+            end
         end
+
     elseif IsInGuild() then
         for i = 1, GetNumGuildMembers() do
             local name = GetGuildRosterInfo(i)
-            if name then table.insert(list, name) end
+            if name then
+                table.insert(list, name)
+            end
         end
     end
 
     return list
 end
+
 
 
 UIDropDownMenu_Initialize(dropdown, function()
