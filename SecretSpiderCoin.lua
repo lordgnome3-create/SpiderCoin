@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v6.6 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.7 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -169,7 +169,7 @@ closeBtn:SetScript("OnClick", function() SSC_Frame:Hide() end)
 -- Dropdown
 -- ======================
 
-SSC_Frame.selected = Player()
+SSC_Frame.selected = Player()  -- default selection
 
 local dropdown = CreateFrame("Frame","SSC_Dropdown",SSC_Frame,"UIDropDownMenuTemplate")
 dropdown:SetPoint("TOP", SSC_Frame, "TOP", 0, -45)
@@ -177,12 +177,14 @@ dropdown:SetPoint("TOP", SSC_Frame, "TOP", 0, -45)
 local function RefreshDropdown()
     UIDropDownMenu_Initialize(dropdown, function()
         local members = GetGroupMembers()
-        for _, name in ipairs(members) do
+        for index, name in ipairs(members) do
             local info = {}
             info.text = name
+            info.value = name
             info.func = function()
                 SSC_Frame.selected = name
                 UIDropDownMenu_SetText(name, dropdown)
+                UIDropDownMenu_SetSelectedID(dropdown, index)
             end
             UIDropDownMenu_AddButton(info)
         end
