@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v3.0 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v4.0 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -18,7 +18,7 @@ if not SecretSpiderCoinDB then
 end
 
 -- ======================
--- Utility
+-- Utilities
 -- ======================
 
 local function Player()
@@ -39,8 +39,8 @@ local function IsAuthorized()
     return IsGuildMaster() or SecretSpiderCoinDB.distributors[Player()]
 end
 
-local function Log(action)
-    table.insert(SecretSpiderCoinDB.history, date("%H:%M:%S") .. " " .. action)
+local function Log(msg)
+    table.insert(SecretSpiderCoinDB.history, date("%H:%M:%S ") .. msg)
 end
 
 -- ======================
@@ -83,151 +83,97 @@ end
 -- Announcements
 -- ======================
 
-local function Say(msg, channel)
-    SendChatMessage(msg, channel)
-end
-
 local function AnnounceBalance(name, channel)
-    Say(name .. " has " ..
+    SendChatMessage(
+        name .. " has " ..
         (SecretSpiderCoinDB.balances[name] or 0) ..
-        " Secret Spider Coins", channel)
+        " Secret Spider Coins",
+        channel
+    )
 end
-
--- ======================
--- Top 10
--- ======================
 
 local function AnnounceTop10(channel)
     local list = {}
-    for n, a in pairs(SecretSpiderCoinDB.balances) do
-        table.insert(list, {n=n,a=a})
+    for n,a in pairs(SecretSpiderCoinDB.balances) do
+        table.insert(list,{n=n,a=a})
     end
+    table.sort(list,function(x,y) return x.a>y.a end)
 
-    table.sort(list, function(x,y) return x.a > y.a end)
-
-    Say("Top 10 Secret Spider Coins:", channel)
-    for i=1, math.min(10, getn(list)) do
-        Say(i .. ". " .. list[i].n .. " - " .. list[i].a, channel)
-    end
-end
-
--- ======================
--- Amount Input Popup
--- ======================
-
-StaticPopupDialogs["SSC_AMOUNT"] = {
-    text = "Enter coin amount:",
-    button1 = "Confirm",
-    button2 = "Cancel",
-    hasEditBox = 1,
-    timeout = 0,
-    whileDead = 1,
-    hideOnEscape = 1,
-    OnAccept = function(self)
-        local amt = tonumber(self.editBox:GetText())
-        if not amt or amt == 0 then return end
-        AddCoins(self.data.target, amt * self.data.mult)
-    end,
-    EditBoxOnEnterPressed = function(self)
-        local parent = self:GetParent()
-        parent.button1:Click()
-    end
-}
-
--- ======================
--- Right Click Menu
--- ======================
-
-UnitPopupButtons["SSC_MENU"] = { text = "Secret Spider Coin", dist = 0 }
-table.insert(UnitPopupMenus["PLAYER"], "SSC_MENU")
-
-hooksecurefunc("UnitPopup_OnClick", function(self)
-    if self.value ~= "SSC_MENU" then return end
-    if not IsAuthorized() then return end
-
-    local target = UnitName("target")
-    if not target then return end
-
-    StaticPopupDialogs["SSC_ACTION"] = {
-        text = "Secret Spider Coin: " .. target,
-        button1 = "Add",
-        button2 = "Remove",
-        button3 = "Announce",
-        timeout = 0,
-        whileDead = 1,
-        hideOnEscape = 1,
-
-        OnAccept = function()
-            StaticPopup_Show("SSC_AMOUNT", nil, nil,
-                { target=target, mult=1 })
-        end,
-
-        OnCancel = function()
-            StaticPopup_Show("SSC_AMOUNT", nil, nil,
-                { target=target, mult=-1 })
-        end,
-
-        OnAlt = function()
-            StaticPopup_Show("SSC_CHANNEL", nil, nil, target)
-        end
-    }
-
-    StaticPopup_Show("SSC_ACTION")
-end)
-
--- ======================
--- Channel Picker
--- ======================
-
-StaticPopupDialogs["SSC_CHANNEL"] = {
-    text = "Announce to:",
-    button1 = "Guild",
-    button2 = "Party",
-    button3 = "Raid",
-    timeout = 0,
-    whileDead = 1,
-    hideOnEscape = 1,
-
-    OnAccept = function(self) AnnounceBalance(self.data,"GUILD") end,
-    OnCancel = function(self) AnnounceBalance(self.data,"PARTY") end,
-    OnAlt = function(self) AnnounceBalance(self.data,"RAID") end
-}
-
--- ======================
--- Slash Commands
--- ======================
-
-SLASH_SSC1 = "/ssc"
-SlashCmdList["SSC"] = function(msg)
-    if msg == "top guild" then AnnounceTop10("GUILD")
-    elseif msg == "top party" then AnnounceTop10("PARTY")
-    elseif msg == "top raid" then AnnounceTop10("RAID")
-    elseif msg == "history" then
-        for _,v in ipairs(SecretSpiderCoinDB.history) do
-            print(v)
-        end
+    SendChatMessage("Top 10 Secret Spider Coins:",channel)
+    for i=1, math.min(10,getn(list)) do
+        SendChatMessage(i..". "..list[i].n.." - "..list[i].a,channel)
     end
 end
 
 -- ======================
--- Events
+-- Group Member List
 -- ======================
 
-local f = CreateFrame("Frame")
-f:RegisterEvent("ADDON_LOADED")
-f:RegisterEvent("CHAT_MSG_ADDON")
+local function GetGroupMembers()
+    local members = {}
 
-f:SetScript("OnEvent", function(_, event, arg1, arg2)
-    if event == "ADDON_LOADED" and arg1 == "SecretSpiderCoin" then
-        InitGuildMaster()
-        RegisterAddonMessagePrefix(SSC_PREFIX)
-        print("|cff00ff00Secret Spider Coin v3.0 loaded.|r")
-    end
-
-    if event == "CHAT_MSG_ADDON" and arg1 == SSC_PREFIX then
-        local cmd,name,amt = strsplit("|", arg2)
-        if cmd == "SET" then
-            SecretSpiderCoinDB.balances[name] = tonumber(amt)
+    if GetNumRaidMembers() > 0 then
+        for i=1, GetNumRaidMembers() do
+            table.insert(members, UnitName("raid"..i))
         end
+    elseif GetNumPartyMembers() > 0 then
+        table.insert(members, Player())
+        for i=1, GetNumPartyMembers() do
+            table.insert(members, UnitName("party"..i))
+        end
+    else
+        table.insert(members, Player())
     end
-end)
+
+    return members
+end
+
+-- ======================
+-- Main Window
+-- ======================
+
+local SSC_Frame = CreateFrame("Frame","SSC_MainFrame",UIParent)
+SSC_Frame:SetWidth(300)
+SSC_Frame:SetHeight(200)
+SSC_Frame:SetPoint("CENTER")
+SSC_Frame:SetBackdrop({
+    bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
+    edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border",
+    tile=true, tileSize=32, edgeSize=32,
+    insets={left=11,right=12,top=12,bottom=11}
+})
+SSC_Frame:Hide()
+SSC_Frame:SetMovable(true)
+SSC_Frame:EnableMouse(true)
+SSC_Frame:RegisterForDrag("LeftButton")
+SSC_Frame:SetScript("OnDragStart", function() this:StartMoving() end)
+SSC_Frame:SetScript("OnDragStop", function() this:StopMovingOrSizing() end)
+
+SSC_Frame.title = SSC_Frame:CreateFontString(nil,"OVERLAY","GameFontNormal")
+SSC_Frame.title:SetPoint("TOP",0,-15)
+SSC_Frame.title:SetText("Secret Spider Coin")
+
+-- Dropdown
+SSC_Frame.selected = Player()
+
+SSC_Frame.drop = CreateFrame("Frame","SSC_Dropdown",SSC_Frame,"UIDropDownMenuTemplate")
+SSC_Frame.drop:SetPoint("TOP",-10,-40)
+
+local function DropInit()
+    local info = {}
+    for _,name in ipairs(GetGroupMembers()) do
+        info.text = name
+        info.func = function()
+            SSC_Frame.selected = name
+            UIDropDownMenu_SetText(name, SSC_Frame.drop)
+        end
+        UIDropDownMenu_AddButton(info)
+    end
+end
+
+UIDropDownMenu_Initialize(SSC_Frame.drop, DropInit)
+UIDropDownMenu_SetWidth(150, SSC_Frame.drop)
+UIDropDownMenu_SetText(Player(), SSC_Frame.drop)
+
+-- Amount box
+SSC_Frame.amount = CreateFrame("EditBox",nil,SSC_Frame,"InputBoxTemplate")
