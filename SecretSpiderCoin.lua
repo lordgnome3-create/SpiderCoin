@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v4.0 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v5.0 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -129,13 +129,13 @@ local function GetGroupMembers()
 end
 
 -- ======================
--- Main Window (FIXED)
+-- Main Window
 -- ======================
 
-local SSC_Frame = CreateFrame("Frame", "SSC_MainFrame", UIParent)
+local SSC_Frame = CreateFrame("Frame","SSC_MainFrame",UIParent)
 SSC_Frame:SetWidth(320)
 SSC_Frame:SetHeight(220)
-SSC_Frame:SetPoint("CENTER")
+SSC_Frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 SSC_Frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
     edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -145,43 +145,29 @@ SSC_Frame:SetBackdrop({
 SSC_Frame:SetMovable(true)
 SSC_Frame:EnableMouse(true)
 SSC_Frame:RegisterForDrag("LeftButton")
-SSC_Frame:SetScript("OnDragStart", function() SSC_Frame:StartMoving() end)
-SSC_Frame:SetScript("OnDragStop", function() SSC_Frame:StopMovingOrSizing() end)
+SSC_Frame:SetScript("OnDragStart", function(self) self:StartMoving() end)
+SSC_Frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 SSC_Frame:Hide()
 
 -- Title
 local title = SSC_Frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-title:SetPoint("TOP", 0, -15)
+title:SetPoint("TOP", SSC_Frame, "TOP", 0, -15)
 title:SetText("Secret Spider Coin")
 
 -- ======================
--- Dropdown (FIXED)
+-- Dropdown
 -- ======================
 
-SSC_Frame.selected = UnitName("player")
+SSC_Frame.selected = Player()
 
-local dropdown = CreateFrame("Frame", "SSC_Dropdown", SSC_Frame, "UIDropDownMenuTemplate")
-dropdown:SetPoint("TOP", 0, -45)
+local dropdown = CreateFrame("Frame","SSC_Dropdown",SSC_Frame,"UIDropDownMenuTemplate")
+dropdown:SetPoint("TOP", SSC_Frame, "TOP", 0, -45)
 
 local function RefreshDropdown()
     UIDropDownMenu_Initialize(dropdown, function()
-        local info = {}
-        local members = {}
-
-        if GetNumRaidMembers() > 0 then
-            for i = 1, GetNumRaidMembers() do
-                table.insert(members, UnitName("raid" .. i))
-            end
-        elseif GetNumPartyMembers() > 0 then
-            table.insert(members, UnitName("player"))
-            for i = 1, GetNumPartyMembers() do
-                table.insert(members, UnitName("party" .. i))
-            end
-        else
-            table.insert(members, UnitName("player"))
-        end
-
+        local members = GetGroupMembers()
         for _, name in ipairs(members) do
+            local info = {}
             info.text = name
             info.func = function()
                 SSC_Frame.selected = name
@@ -190,7 +176,6 @@ local function RefreshDropdown()
             UIDropDownMenu_AddButton(info)
         end
     end)
-
     UIDropDownMenu_SetWidth(160, dropdown)
     UIDropDownMenu_SetText(SSC_Frame.selected, dropdown)
 end
@@ -200,7 +185,7 @@ end
 -- ======================
 
 local amountBox = CreateFrame("EditBox", nil, SSC_Frame, "InputBoxTemplate")
-amountBox:SetPoint("TOP", 0, -85)
+amountBox:SetPoint("TOP", SSC_Frame, "TOP", 0, -85)
 amountBox:SetWidth(80)
 amountBox:SetHeight(20)
 amountBox:SetAutoFocus(false)
@@ -218,9 +203,8 @@ local function MakeButton(text, x, y, handler)
     b:SetText(text)
     b:SetWidth(110)
     b:SetHeight(24)
-    b:SetPoint("TOP", x, y)
+    b:SetPoint("TOP", SSC_Frame, "TOP", x, y)
     b:SetScript("OnClick", handler)
-    return b
 end
 
 MakeButton("Add Coins", -70, -130, function()
@@ -244,7 +228,7 @@ MakeButton("Top 10 (Guild)", 70, -165, function()
 end)
 
 -- ======================
--- Slash Command (FIXED)
+-- Slash Command
 -- ======================
 
 SLASH_SSC1 = "/ssc"
@@ -263,3 +247,22 @@ SlashCmdList["SSC"] = function(msg)
     end
 end
 
+-- ======================
+-- Events
+-- ======================
+
+local f = CreateFrame("Frame")
+f:RegisterEvent("ADDON_LOADED")
+f:RegisterEvent("CHAT_MSG_ADDON")
+
+f:SetScript("OnEvent", function(_, event, arg1, arg2)
+    if event=="ADDON_LOADED" and arg1=="SecretSpiderCoin" then
+        InitGuildMaster()
+        RegisterAddonMessagePrefix(SSC_PREFIX)
+        print("|cff00ff00Secret Spider Coin loaded. Use /ssc show|r")
+    end
+
+    if event=="CHAT_MSG_ADDON" and arg1==SSC_PREFIX then
+        local cmd,name,amt = strsplit("|",arg2)
+        if cmd=="SET" then
+            SecretSpiderCoinDB.balances
