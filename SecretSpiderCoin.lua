@@ -30,7 +30,7 @@ end
 local frame = CreateFrame("Frame", "SecretSpiderCoinFrame", UIParent)
 frame:SetWidth(420)
 frame:SetHeight(300)
-frame:SetPoint("CENTER")
+frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
     edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -43,6 +43,7 @@ frame:RegisterForDrag("LeftButton")
 frame:SetScript("OnDragStart", function() frame:StartMoving() end)
 frame:SetScript("OnDragStop", function() frame:StopMovingOrSizing() end)
 frame:Hide()
+
 
 -----------------------------------
 -- Title
