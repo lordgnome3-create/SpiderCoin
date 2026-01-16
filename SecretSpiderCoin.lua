@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v6.8 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.9 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -93,12 +93,12 @@ end
 local function AnnounceTop10(channel)
     local list = {}
     for n, a in pairs(SecretSpiderCoinDB.balances) do
-        table.insert(list, {n=n, a=a})
+        table.insert(list, {n=n, a=a})  -- safe insert
     end
     table.sort(list, function(x, y) return x.a > y.a end)
 
     SendToChannel("Top 10 Secret Spider Coins:", channel)
-    for i = 1, math.min(10, table.getn(list)) do
+    for i = 1, math.min(10, #list) do
         SendToChannel(i .. ". " .. list[i].n .. " - " .. list[i].a, channel)
     end
 end
@@ -113,16 +113,20 @@ local function GetGroupMembers()
     if GetNumRaidMembers() > 0 then
         for i = 1, GetNumRaidMembers() do
             local name = UnitName("raid"..i)
-            if name then table.insert(members, name) end
+            if name then
+                table.insert(members, name)  -- safe
+            end
         end
     elseif GetNumPartyMembers() > 0 then
-        table.insert(members, Player())
+        table.insert(members, Player())  -- safe
         for i = 1, GetNumPartyMembers() do
             local name = UnitName("party"..i)
-            if name then table.insert(members, name) end
+            if name then
+                table.insert(members, name)  -- safe
+            end
         end
     else
-        table.insert(members, Player())
+        table.insert(members, Player())  -- safe
     end
 
     return members
@@ -133,8 +137,8 @@ end
 -- ======================
 
 local SSC_Frame = CreateFrame("Frame","SSC_MainFrame",UIParent)
-SSC_Frame:SetWidth(400)
-SSC_Frame:SetHeight(260)
+SSC_Frame:SetWidth(420)
+SSC_Frame:SetHeight(280)
 SSC_Frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 SSC_Frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
