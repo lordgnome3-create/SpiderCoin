@@ -238,19 +238,21 @@ end)
 
 SLASH_SSC1 = "/ssc"
 SlashCmdList["SSC"] = function(msg)
+    msg = string.lower(msg)
     if msg == "show" then
-        if SSC_Frame:IsShown() then
-            SSC_Frame:Hide()
-        else
-            RefreshDropdown()
-            SSC_Frame:Show()
-        end
+        RefreshDropdown()
+        SSC_Frame:Show()
+    elseif msg == "close" then
+        SSC_Frame:Hide()
     elseif msg == "history" then
         for _, v in ipairs(SecretSpiderCoinDB.history) do
             print(v)
         end
+    else
+        print("|cff00ff00[SSC]|r Use /ssc show or /ssc close")
     end
 end
+
 
 -- ======================
 -- Events
