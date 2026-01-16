@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v6.7 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.8 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -64,12 +64,17 @@ local function Broadcast(msg)
     end
 end
 
+local function SendToChannel(msg, channel)
+    SendChatMessage(msg, channel)
+end
+
 -- ======================
 -- Coin Logic
 -- ======================
 
 local function AddCoins(name, amount)
-    local new = (SecretSpiderCoinDB.balances[name] or 0) + amount
+    local current = SecretSpiderCoinDB.balances[name] or 0
+    local new = current + amount
     SecretSpiderCoinDB.balances[name] = new
     Log(Player() .. " changed " .. name .. " by " .. amount)
     Broadcast("SET|" .. name .. "|" .. new)
@@ -82,10 +87,7 @@ end
 -- ======================
 
 local function AnnounceBalance(name, channel)
-    SendChatMessage(
-        name .. " has " .. (SecretSpiderCoinDB.balances[name] or 0) .. " Secret Spider Coins",
-        channel
-    )
+    SendToChannel(name .. " has " .. (SecretSpiderCoinDB.balances[name] or 0) .. " Secret Spider Coins", channel)
 end
 
 local function AnnounceTop10(channel)
@@ -95,9 +97,9 @@ local function AnnounceTop10(channel)
     end
     table.sort(list, function(x, y) return x.a > y.a end)
 
-    SendChatMessage("Top 10 Secret Spider Coins:", channel)
+    SendToChannel("Top 10 Secret Spider Coins:", channel)
     for i = 1, math.min(10, table.getn(list)) do
-        SendChatMessage(i .. ". " .. list[i].n .. " - " .. list[i].a, channel)
+        SendToChannel(i .. ". " .. list[i].n .. " - " .. list[i].a, channel)
     end
 end
 
@@ -111,22 +113,16 @@ local function GetGroupMembers()
     if GetNumRaidMembers() > 0 then
         for i = 1, GetNumRaidMembers() do
             local name = UnitName("raid"..i)
-            if name then
-                table.insert(members, name)
-            end
+            if name then table.insert(members, name) end
         end
     elseif GetNumPartyMembers() > 0 then
-        local pname = Player()
-        if pname then table.insert(members, pname) end
+        table.insert(members, Player())
         for i = 1, GetNumPartyMembers() do
             local name = UnitName("party"..i)
-            if name then
-                table.insert(members, name)
-            end
+            if name then table.insert(members, name) end
         end
     else
-        local pname = Player()
-        if pname then table.insert(members, pname) end
+        table.insert(members, Player())
     end
 
     return members
@@ -137,8 +133,8 @@ end
 -- ======================
 
 local SSC_Frame = CreateFrame("Frame","SSC_MainFrame",UIParent)
-SSC_Frame:SetWidth(320)
-SSC_Frame:SetHeight(220)
+SSC_Frame:SetWidth(400)
+SSC_Frame:SetHeight(260)
 SSC_Frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 SSC_Frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -150,7 +146,6 @@ SSC_Frame:EnableMouse(true)
 SSC_Frame:SetMovable(true)
 SSC_Frame:SetUserPlaced(true)
 SSC_Frame:RegisterForDrag("LeftButton")
--- Dragging safe for Vanilla/Turtle WoW
 SSC_Frame:SetScript("OnDragStart", function() SSC_Frame:StartMoving() end)
 SSC_Frame:SetScript("OnDragStop", function() SSC_Frame:StopMovingOrSizing() end)
 SSC_Frame:Hide()
@@ -166,13 +161,17 @@ closeBtn:SetPoint("TOPRIGHT", SSC_Frame, "TOPRIGHT", -5, -5)
 closeBtn:SetScript("OnClick", function() SSC_Frame:Hide() end)
 
 -- ======================
--- Dropdown
+-- Dropdown for players
 -- ======================
 
-SSC_Frame.selected = Player()  -- default selection
+SSC_Frame.selected = Player()
 
 local dropdown = CreateFrame("Frame","SSC_Dropdown",SSC_Frame,"UIDropDownMenuTemplate")
-dropdown:SetPoint("TOP", SSC_Frame, "TOP", 0, -45)
+dropdown:SetPoint("TOPLEFT", SSC_Frame, "TOPLEFT", 20, -45)
+
+local selectedBox = SSC_Frame:CreateFontString(nil,"OVERLAY","GameFontNormal")
+selectedBox:SetPoint("LEFT", dropdown, "RIGHT", 20, 0)
+selectedBox:SetText("Selected: "..SSC_Frame.selected)
 
 local function RefreshDropdown()
     UIDropDownMenu_Initialize(dropdown, function()
@@ -185,12 +184,14 @@ local function RefreshDropdown()
                 SSC_Frame.selected = name
                 UIDropDownMenu_SetText(name, dropdown)
                 UIDropDownMenu_SetSelectedID(dropdown, index)
+                selectedBox:SetText("Selected: "..name)
             end
             UIDropDownMenu_AddButton(info)
         end
     end)
     UIDropDownMenu_SetWidth(160, dropdown)
     UIDropDownMenu_SetText(SSC_Frame.selected, dropdown)
+    selectedBox:SetText("Selected: "..SSC_Frame.selected)
 end
 
 -- ======================
@@ -198,7 +199,7 @@ end
 -- ======================
 
 local amountBox = CreateFrame("EditBox", nil, SSC_Frame, "InputBoxTemplate")
-amountBox:SetPoint("TOP", SSC_Frame, "TOP", 0, -85)
+amountBox:SetPoint("TOPLEFT", dropdown, "BOTTOMLEFT", 0, -25)
 amountBox:SetWidth(80)
 amountBox:SetHeight(20)
 amountBox:SetAutoFocus(false)
@@ -206,6 +207,33 @@ amountBox:SetAutoFocus(false)
 local amountLabel = SSC_Frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 amountLabel:SetPoint("BOTTOM", amountBox, "TOP", 0, 5)
 amountLabel:SetText("Amount")
+
+-- ======================
+-- Channel Dropdown
+-- ======================
+
+local channelDropdown = CreateFrame("Frame","SSC_ChannelDropdown",SSC_Frame,"UIDropDownMenuTemplate")
+channelDropdown:SetPoint("LEFT", amountBox, "RIGHT", 20, 0)
+
+SSC_Frame.channel = "GUILD"
+
+local function RefreshChannelDropdown()
+    local channels = {"GUILD","PARTY","RAID","SAY"}
+    UIDropDownMenu_Initialize(channelDropdown, function()
+        for i, ch in ipairs(channels) do
+            local info = {}
+            info.text = ch
+            info.value = ch
+            info.func = function()
+                SSC_Frame.channel = ch
+                UIDropDownMenu_SetText(ch, channelDropdown)
+            end
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    UIDropDownMenu_SetWidth(100, channelDropdown)
+    UIDropDownMenu_SetText(SSC_Frame.channel, channelDropdown)
+end
 
 -- ======================
 -- Buttons
@@ -220,24 +248,24 @@ local function MakeButton(text, x, y, handler)
     b:SetScript("OnClick", handler)
 end
 
-MakeButton("Add Coins", -70, -130, function()
+MakeButton("Add Coins", -90, -130, function()
     if not IsAuthorized() then return end
     local amt = tonumber(amountBox:GetText())
     if amt then AddCoins(SSC_Frame.selected, amt) end
 end)
 
-MakeButton("Remove Coins", 70, -130, function()
+MakeButton("Remove Coins", 90, -130, function()
     if not IsAuthorized() then return end
     local amt = tonumber(amountBox:GetText())
     if amt then AddCoins(SSC_Frame.selected, -amt) end
 end)
 
-MakeButton("Announce (Guild)", -70, -165, function()
-    AnnounceBalance(SSC_Frame.selected, "GUILD")
+MakeButton("Announce Balance", -90, -165, function()
+    AnnounceBalance(SSC_Frame.selected, SSC_Frame.channel)
 end)
 
-MakeButton("Top 10 (Guild)", 70, -165, function()
-    AnnounceTop10("GUILD")
+MakeButton("Top 10", 90, -165, function()
+    AnnounceTop10(SSC_Frame.channel)
 end)
 
 -- ======================
@@ -249,6 +277,7 @@ SlashCmdList["SSC"] = function(msg)
     msg = string.lower(msg)
     if msg == "show" then
         RefreshDropdown()
+        RefreshChannelDropdown()
         SSC_Frame:Show()
     elseif msg == "close" then
         SSC_Frame:Hide()
