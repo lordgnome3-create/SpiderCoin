@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v6.2 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.4 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -159,6 +159,11 @@ local title = SSC_Frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 title:SetPoint("TOP", SSC_Frame, "TOP", 0, -15)
 title:SetText("Secret Spider Coin")
 
+-- Close Button [X]
+local closeBtn = CreateFrame("Button", "SSC_CloseButton", SSC_Frame, "UIPanelCloseButton")
+closeBtn:SetPoint("TOPRIGHT", SSC_Frame, "TOPRIGHT", -5, -5)
+closeBtn:SetScript("OnClick", function() SSC_Frame:Hide() end)
+
 -- ======================
 -- Dropdown
 -- ======================
@@ -182,7 +187,7 @@ local function RefreshDropdown()
         end
     end)
     UIDropDownMenu_SetWidth(160, dropdown)
-    UIDropDownMenu_SetText(SSC_Frame.selected, dropdown)
+    UIDropDownMenu_SetText(SSC_Frame.selected, dropdown) -- show selected
 end
 
 -- ======================
@@ -252,7 +257,6 @@ SlashCmdList["SSC"] = function(msg)
         print("|cff00ff00[SSC]|r Use /ssc show or /ssc close")
     end
 end
-
 
 -- ======================
 -- Events
