@@ -149,9 +149,17 @@ SSC_Frame:SetBackdrop({
 })
 SSC_Frame:SetMovable(true)
 SSC_Frame:EnableMouse(true)
+SSC_Frame:SetUserPlaced(true)
 SSC_Frame:RegisterForDrag("LeftButton")
-SSC_Frame:SetScript("OnDragStart", function(self) self:StartMoving() end)
-SSC_Frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+SSC_Frame:SetScript("OnDragStart", function(frame, button)
+    if button == "LeftButton" then
+        frame:StartMoving()
+    end
+end)
+SSC_Frame:SetScript("OnDragStop", function(frame)
+    frame:StopMovingOrSizing()
+end)
+
 SSC_Frame:Hide()
 
 -- Title
