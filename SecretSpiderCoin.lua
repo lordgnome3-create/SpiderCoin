@@ -5,6 +5,19 @@ SecretSpiderCoin = {}
 SecretSpiderCoin.coins = {}
 
 -----------------------------------
+-- Saved Variables
+-----------------------------------
+local function LoadData()
+    if SecretSpiderCoinDB then
+        SecretSpiderCoin.coins = SecretSpiderCoinDB
+    end
+end
+
+local function SaveData()
+    SecretSpiderCoinDB = SecretSpiderCoin.coins
+end
+
+-----------------------------------
 -- Utility Functions
 -----------------------------------
 local function GetCoins(name)
@@ -16,12 +29,14 @@ end
 
 local function AddCoins(name, amount)
     SecretSpiderCoin.coins[name] = GetCoins(name) + amount
+    SaveData()
 end
 
 local function RemoveCoins(name, amount)
     local newValue = GetCoins(name) - amount
     if newValue < 0 then newValue = 0 end
     SecretSpiderCoin.coins[name] = newValue
+    SaveData()
 end
 
 -----------------------------------
@@ -354,3 +369,18 @@ SlashCmdList["SECRETSPIDERCOIN"] = function(msg)
         frame:Show()
     end
 end
+
+-----------------------------------
+-- Event Handler for Loading Data
+-----------------------------------
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("ADDON_LOADED")
+eventFrame:RegisterEvent("PLAYER_LOGOUT")
+eventFrame:SetScript("OnEvent", function()
+    if event == "ADDON_LOADED" and arg1 == "SecretSpiderCoin" then
+        LoadData()
+        UpdateTop15()
+    elseif event == "PLAYER_LOGOUT" then
+        SaveData()
+    end
+end)
