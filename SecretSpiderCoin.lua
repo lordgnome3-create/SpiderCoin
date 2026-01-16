@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v5.0 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.0 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -68,10 +68,6 @@ end
 -- Coin Logic
 -- ======================
 
-local function SetCoins(name, amount)
-    SecretSpiderCoinDB.balances[name] = amount
-end
-
 local function AddCoins(name, amount)
     local new = (SecretSpiderCoinDB.balances[name] or 0) + amount
     SecretSpiderCoinDB.balances[name] = new
@@ -85,9 +81,7 @@ end
 
 local function AnnounceBalance(name, channel)
     SendChatMessage(
-        name .. " has " ..
-        (SecretSpiderCoinDB.balances[name] or 0) ..
-        " Secret Spider Coins",
+        name .. " has " .. (SecretSpiderCoinDB.balances[name] or 0) .. " Secret Spider Coins",
         channel
     )
 end
@@ -265,4 +259,7 @@ f:SetScript("OnEvent", function(_, event, arg1, arg2)
     if event=="CHAT_MSG_ADDON" and arg1==SSC_PREFIX then
         local cmd,name,amt = strsplit("|",arg2)
         if cmd=="SET" then
-            SecretSpiderCoinDB.balances
+            SecretSpiderCoinDB.balances[name] = tonumber(amt)
+        end
+    end
+end)
