@@ -118,7 +118,7 @@ UIDropDownMenu_Initialize(dropdown, function(self, level)
 end)
 
 UIDropDownMenu_SetSelectedValue(dropdown, nil)
-UIDropDownMenu_SetWidth(dropdown, 160)
+UIDropDownMenu_SetWidth(160, dropdown)
 UIDropDownMenu_SetText(dropdown, "Select Player")
 
 -----------------------------------
@@ -193,7 +193,7 @@ UIDropDownMenu_Initialize(chatDrop, function(self, level)
 end)
 
 UIDropDownMenu_SetSelectedValue(chatDrop, "GUILD")
-UIDropDownMenu_SetWidth(chatDrop, 100)
+UIDropDownMenu_SetWidth(100, chatDrop)
 UIDropDownMenu_SetText(chatDrop, "GUILD")
 
 -----------------------------------
