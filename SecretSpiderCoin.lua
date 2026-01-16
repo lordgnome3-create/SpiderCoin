@@ -29,7 +29,7 @@ end
 -----------------------------------
 local frame = CreateFrame("Frame", "SecretSpiderCoinFrame", UIParent)
 frame:SetWidth(420)
-frame:SetHeight(350)
+frame:SetHeight(550)
 frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -179,6 +179,53 @@ amountBox:SetNumeric(true)
 amountBox:SetText("1")
 
 -----------------------------------
+-- Top 15 List
+-----------------------------------
+local top15Label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+top15Label:SetPoint("TOPLEFT", 240, -50)
+top15Label:SetText("Top 15 Players")
+
+local top15Frame = CreateFrame("Frame", "SSC_Top15Frame", frame)
+top15Frame:SetWidth(160)
+top15Frame:SetHeight(320)
+top15Frame:SetPoint("TOPLEFT", 240, -75)
+top15Frame:SetBackdrop({
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+    tile = true, tileSize = 16, edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 }
+})
+
+local top15Lines = {}
+for i = 1, 15 do
+    local line = top15Frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    line:SetPoint("TOPLEFT", 8, -8 - (i-1)*20)
+    line:SetText("")
+    line:SetJustifyH("LEFT")
+    top15Lines[i] = line
+end
+
+local function UpdateTop15()
+    local list = {}
+    for name, coins in pairs(SecretSpiderCoin.coins) do
+        table.insert(list, {name=name, coins=coins})
+    end
+    
+    table.sort(list, function(a,b) return a.coins > b.coins end)
+    
+    for i = 1, 15 do
+        if i <= table.getn(list) then
+            top15Lines[i]:SetText(i..". "..list[i].name.." - "..list[i].coins)
+        else
+            top15Lines[i]:SetText("")
+        end
+    end
+end
+
+-- Call UpdateTop15 initially
+UpdateTop15()
+
+-----------------------------------
 -- Status Text
 -----------------------------------
 local statusText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -199,6 +246,7 @@ addBtn:SetScript("OnClick", function()
         local amt = tonumber(amountBox:GetText()) or 0
         AddCoins(selectedPlayer, amt)
         statusText:SetText(selectedPlayer.." has "..GetCoins(selectedPlayer).." (+ "..amt..")")
+        UpdateTop15()
     else
         statusText:SetText("Please select a player first")
     end
@@ -215,6 +263,7 @@ removeBtn:SetScript("OnClick", function()
         local amt = tonumber(amountBox:GetText()) or 0
         RemoveCoins(selectedPlayer, amt)
         statusText:SetText(selectedPlayer.." has "..GetCoins(selectedPlayer).." (- "..amt..")")
+        UpdateTop15()
     else
         statusText:SetText("Please select a player first")
     end
@@ -257,7 +306,7 @@ end)
 local topBtn = CreateFrame("Button", "SSC_TopBtn", frame, "UIPanelButtonTemplate")
 topBtn:SetWidth(120)
 topBtn:SetHeight(22)
-topBtn:SetPoint("TOP", 0, -320)
+topBtn:SetPoint("TOP", 0, -520)
 topBtn:SetText("Say Top 10")
 
 topBtn:SetScript("OnClick", function()
