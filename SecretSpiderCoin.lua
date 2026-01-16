@@ -94,10 +94,11 @@ local function AnnounceTop10(channel)
     table.sort(list, function(x, y) return x.a > y.a end)
 
     SendChatMessage("Top 10 Secret Spider Coins:", channel)
-    for i = 1, math.min(10, #list) do
+    for i = 1, math.min(10, table.getn(list)) do
         SendChatMessage(i .. ". " .. list[i].n .. " - " .. list[i].a, channel)
     end
 end
+
 
 -- ======================
 -- Group Member List (nil-safe)
