@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v6.4 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.5 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -73,7 +73,6 @@ local function AddCoins(name, amount)
     SecretSpiderCoinDB.balances[name] = new
     Log(Player() .. " changed " .. name .. " by " .. amount)
     Broadcast("SET|" .. name .. "|" .. new)
-    -- Feedback message
     local action = amount > 0 and "added" or "removed"
     print("|cff00ff00[SSC]|r " .. math.abs(amount) .. " coins " .. action .. " for " .. name .. ". New balance: " .. new)
 end
@@ -159,7 +158,6 @@ end)
 SSC_Frame:SetScript("OnDragStop", function(frame)
     frame:StopMovingOrSizing()
 end)
-
 SSC_Frame:Hide()
 
 -- Title
@@ -195,7 +193,7 @@ local function RefreshDropdown()
         end
     end)
     UIDropDownMenu_SetWidth(160, dropdown)
-    UIDropDownMenu_SetText(SSC_Frame.selected, dropdown) -- show selected
+    UIDropDownMenu_SetText(SSC_Frame.selected, dropdown)
 end
 
 -- ======================
