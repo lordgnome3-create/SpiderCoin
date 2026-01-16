@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v7.0 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v8.0 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -146,8 +146,8 @@ SSC_Frame:EnableMouse(true)
 SSC_Frame:SetMovable(true)
 SSC_Frame:SetUserPlaced(true)
 SSC_Frame:RegisterForDrag("LeftButton")
-SSC_Frame:SetScript("OnDragStart", function() SSC_Frame:StartMoving() end)
-SSC_Frame:SetScript("OnDragStop", function() SSC_Frame:StopMovingOrSizing() end)
+SSC_Frame:SetScript("OnDragStart", function(self) self:StartMoving() end)
+SSC_Frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 SSC_Frame:Hide()
 
 -- Title
@@ -276,9 +276,9 @@ SLASH_SSC1 = "/ssc"
 SlashCmdList["SSC"] = function(msg)
     msg = string.lower(msg)
     if msg == "show" then
-        SSC_Frame:Show()                -- show frame first
-        RefreshDropdown()               -- then populate dropdown
-        RefreshChannelDropdown()        -- populate channels
+        RefreshDropdown()          -- populate dropdown first
+        RefreshChannelDropdown()   -- populate channels
+        SSC_Frame:Show()           -- then show frame
     elseif msg == "close" then
         SSC_Frame:Hide()
     elseif msg == "history" then
