@@ -1,5 +1,5 @@
 -- ==================================================
--- Secret Spider Coin v6.0 (Turtle WoW / Vanilla)
+-- Secret Spider Coin v6.1 (Turtle WoW / Vanilla)
 -- ==================================================
 
 SSC_PREFIX = "SSC"
@@ -88,35 +88,43 @@ end
 
 local function AnnounceTop10(channel)
     local list = {}
-    for n,a in pairs(SecretSpiderCoinDB.balances) do
-        table.insert(list,{n=n,a=a})
+    for n, a in pairs(SecretSpiderCoinDB.balances) do
+        table.insert(list, {n=n, a=a})
     end
-    table.sort(list,function(x,y) return x.a>y.a end)
+    table.sort(list, function(x, y) return x.a > y.a end)
 
-    SendChatMessage("Top 10 Secret Spider Coins:",channel)
-    for i=1, math.min(10,getn(list)) do
-        SendChatMessage(i..". "..list[i].n.." - "..list[i].a,channel)
+    SendChatMessage("Top 10 Secret Spider Coins:", channel)
+    for i = 1, math.min(10, #list) do
+        SendChatMessage(i .. ". " .. list[i].n .. " - " .. list[i].a, channel)
     end
 end
 
 -- ======================
--- Group Member List
+-- Group Member List (nil-safe)
 -- ======================
 
 local function GetGroupMembers()
     local members = {}
 
     if GetNumRaidMembers() > 0 then
-        for i=1, GetNumRaidMembers() do
-            table.insert(members, UnitName("raid"..i))
+        for i = 1, GetNumRaidMembers() do
+            local name = UnitName("raid"..i)
+            if name then
+                table.insert(members, name)
+            end
         end
     elseif GetNumPartyMembers() > 0 then
-        table.insert(members, Player())
-        for i=1, GetNumPartyMembers() do
-            table.insert(members, UnitName("party"..i))
+        local pname = Player()
+        if pname then table.insert(members, pname) end
+        for i = 1, GetNumPartyMembers() do
+            local name = UnitName("party"..i)
+            if name then
+                table.insert(members, name)
+            end
         end
     else
-        table.insert(members, Player())
+        local pname = Player()
+        if pname then table.insert(members, pname) end
     end
 
     return members
