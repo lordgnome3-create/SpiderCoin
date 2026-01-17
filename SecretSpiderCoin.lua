@@ -432,7 +432,7 @@ chatBtn:SetPoint("LEFT", chatText, "RIGHT", 5, 0)
 chatBtn:SetText("Change")
 
 local chatIndex = 1
-local chatChannels = { "GUILD", "PARTY", "RAID" }
+local chatChannels = { "GUILD", "PARTY", "RAID", "SAY", "WHISPER" }
 
 chatBtn:SetScript("OnClick", function()
     chatIndex = chatIndex + 1
@@ -467,13 +467,45 @@ topBtn:SetScript("OnClick", function()
         return false
     end)
 
-    SendChatMessage("Top Secret Spider Coin Holders:", chatTarget)
-
     local maxEntries = 10
     if table.getn(list) < 10 then maxEntries = table.getn(list) end
 
-    for i = 1, maxEntries do
-        SendChatMessage(i..". "..list[i].name.." - "..list[i].coins, chatTarget)
+    if chatTarget == "WHISPER" then
+        -- Get last whisper target
+        local whisperTarget = nil
+        for i = 1, 10 do
+            local name, language = GetChatWindowMessages(i)
+            if name and name ~= "" then
+                whisperTarget = name
+                break
+            end
+        end
+        
+        -- If no whisper target found, try to get from chat history
+        if not whisperTarget then
+            -- Check the last tell sent
+            for i = NUM_CHAT_WINDOWS, 1, -1 do
+                local frame = getglobal("ChatFrame"..i)
+                if frame then
+                    whisperTarget = frame.whisperTarget
+                    if whisperTarget then break end
+                end
+            end
+        end
+        
+        if whisperTarget then
+            SendChatMessage("Top Secret Spider Coin Holders:", "WHISPER", nil, whisperTarget)
+            for i = 1, maxEntries do
+                SendChatMessage(i..". "..list[i].name.." - "..list[i].coins, "WHISPER", nil, whisperTarget)
+            end
+        else
+            statusText:SetText("No recent whisper target found")
+        end
+    else
+        SendChatMessage("Top Secret Spider Coin Holders:", chatTarget)
+        for i = 1, maxEntries do
+            SendChatMessage(i..". "..list[i].name.." - "..list[i].coins, chatTarget)
+        end
     end
 end)
 
