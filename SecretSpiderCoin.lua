@@ -316,31 +316,55 @@ amountBox:SetNumeric(true)
 amountBox:SetText("1")
 
 -----------------------------------
--- Top 15 List
+-- Top Holders List
 -----------------------------------
-local top15Label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-top15Label:SetPoint("TOPLEFT", 240, -50)
-top15Label:SetText("Top 15 Players")
+local topLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+topLabel:SetPoint("TOPLEFT", 240, -50)
+topLabel:SetText("Top Holders")
 
-local top15Frame = CreateFrame("Frame", "SSC_Top15Frame", frame)
-top15Frame:SetWidth(160)
-top15Frame:SetHeight(320)
-top15Frame:SetPoint("TOPLEFT", 240, -75)
-top15Frame:SetBackdrop({
+local topFrame = CreateFrame("Frame", "SSC_TopFrame", frame)
+topFrame:SetWidth(160)
+topFrame:SetHeight(320)
+topFrame:SetPoint("TOPLEFT", 240, -75)
+topFrame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
     edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
     tile = true, tileSize = 16, edgeSize = 16,
     insets = { left = 4, right = 4, top = 4, bottom = 4 }
 })
 
-local top15Lines = {}
-for i = 1, 15 do
-    local line = top15Frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    line:SetPoint("TOPLEFT", 8, -8 - (i-1)*20)
-    line:SetText("")
-    line:SetJustifyH("LEFT")
-    top15Lines[i] = line
-end
+-- Scroll frame for top holders
+local topScrollFrame = CreateFrame("ScrollFrame", "SSC_TopScrollFrame", topFrame)
+topScrollFrame:SetWidth(130)
+topScrollFrame:SetHeight(300)
+topScrollFrame:SetPoint("TOPLEFT", 8, -8)
+
+-- Scroll child for top holders
+local topScrollChild = CreateFrame("Frame", "SSC_TopScrollChild", topScrollFrame)
+topScrollChild:SetWidth(130)
+topScrollChild:SetHeight(1)
+topScrollFrame:SetScrollChild(topScrollChild)
+
+-- Scroll bar for top holders
+local topScrollBar = CreateFrame("Slider", "SSC_TopScrollBar", topScrollFrame)
+topScrollBar:SetPoint("TOPRIGHT", topFrame, "TOPRIGHT", -5, -15)
+topScrollBar:SetPoint("BOTTOMRIGHT", topFrame, "BOTTOMRIGHT", -5, 15)
+topScrollBar:SetWidth(16)
+topScrollBar:SetBackdrop({
+    bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
+    edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
+    tile = true, tileSize = 8, edgeSize = 8,
+    insets = { left = 3, right = 3, top = 6, bottom = 6 }
+})
+topScrollBar:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+topScrollBar:SetMinMaxValues(0, 1)
+topScrollBar:SetValueStep(1)
+topScrollBar:SetValue(0)
+topScrollBar:SetScript("OnValueChanged", function()
+    topScrollFrame:SetVerticalScroll(this:GetValue())
+end)
+
+local topLines = {}
 
 local function UpdateTop15()
     local list = {}
@@ -357,12 +381,37 @@ local function UpdateTop15()
         return false
     end)
     
-    for i = 1, 15 do
-        if i <= table.getn(list) then
-            top15Lines[i]:SetText(i..". "..list[i].name.." - "..list[i].coins)
+    local numHolders = table.getn(list)
+    
+    -- Adjust scroll child height
+    local contentHeight = numHolders * 20
+    if contentHeight < 300 then contentHeight = 300 end
+    topScrollChild:SetHeight(contentHeight)
+    
+    -- Update scroll bar
+    local maxScroll = contentHeight - 300
+    if maxScroll < 0 then maxScroll = 0 end
+    topScrollBar:SetMinMaxValues(0, maxScroll)
+    topScrollBar:SetValue(0)
+    
+    -- Clear old lines
+    for i = 1, table.getn(topLines) do
+        topLines[i]:Hide()
+    end
+    
+    -- Create or update lines
+    for i = 1, numHolders do
+        if not topLines[i] then
+            local line = topScrollChild:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            line:SetPoint("TOPLEFT", 5, -((i-1)*20))
+            line:SetJustifyH("LEFT")
+            topLines[i] = line
         else
-            top15Lines[i]:SetText("")
+            topLines[i]:SetPoint("TOPLEFT", 5, -((i-1)*20))
         end
+        
+        topLines[i]:SetText(i..". "..list[i].name.." - "..list[i].coins)
+        topLines[i]:Show()
     end
 end
 
