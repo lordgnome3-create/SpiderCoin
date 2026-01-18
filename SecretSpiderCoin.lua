@@ -35,7 +35,6 @@ end
 
 local function RemoveCoins(name, amount)
     local newValue = GetCoins(name) - amount
-    if newValue < 0 then newValue = 0 end
     SecretSpiderCoin.coins[name] = newValue
     SaveData()
 end
