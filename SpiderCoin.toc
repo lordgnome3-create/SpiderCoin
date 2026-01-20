@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: Spider Coin
+## Notes: Track Spider Coins for players
+## Author: YourName
+## Version: 1.0
+## SavedVariables: SpiderCoinDB
+
+SpiderCoin.lua
