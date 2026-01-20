@@ -1,48 +1,48 @@
 -----------------------------------
--- SecretSpiderCoin
+-- SpiderCoin
 -----------------------------------
-SecretSpiderCoin = {}
-SecretSpiderCoin.coins = {}
-SecretSpiderCoin.lastWhisper = nil
+SpiderCoin = {}
+SpiderCoin.coins = {}
+SpiderCoin.lastWhisper = nil
 
 -----------------------------------
 -- Saved Variables
 -----------------------------------
 local function LoadData()
-    if SecretSpiderCoinDB then
-        SecretSpiderCoin.coins = SecretSpiderCoinDB
+    if SpiderCoinDB then
+        SpiderCoin.coins = SpiderCoinDB
     end
 end
 
 local function SaveData()
-    SecretSpiderCoinDB = SecretSpiderCoin.coins
+    SpiderCoinDB = SpiderCoin.coins
 end
 
 -----------------------------------
 -- Utility Functions
 -----------------------------------
 local function GetCoins(name)
-    if not SecretSpiderCoin.coins[name] then
-        SecretSpiderCoin.coins[name] = 0
+    if not SpiderCoin.coins[name] then
+        SpiderCoin.coins[name] = 0
     end
-    return SecretSpiderCoin.coins[name]
+    return SpiderCoin.coins[name]
 end
 
 local function AddCoins(name, amount)
-    SecretSpiderCoin.coins[name] = GetCoins(name) + amount
+    SpiderCoin.coins[name] = GetCoins(name) + amount
     SaveData()
 end
 
 local function RemoveCoins(name, amount)
     local newValue = GetCoins(name) - amount
-    SecretSpiderCoin.coins[name] = newValue
+    SpiderCoin.coins[name] = newValue
     SaveData()
 end
 
 -----------------------------------
 -- Main Frame
 -----------------------------------
-local frame = CreateFrame("Frame", "SecretSpiderCoinFrame", UIParent)
+local frame = CreateFrame("Frame", "SpiderCoinFrame", UIParent)
 frame:SetWidth(420)
 frame:SetHeight(550)
 frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
@@ -65,7 +65,7 @@ frame:Hide()
 -----------------------------------
 local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 title:SetPoint("TOP", 0, -12)
-title:SetText("Secret Spider Coin")
+title:SetText("Spider Coin")
 
 -----------------------------------
 -- Close Button
@@ -90,7 +90,7 @@ local function GetPlayerList()
     local list = {}
     
     -- First, add all players who have coins
-    for name, coins in pairs(SecretSpiderCoin.coins) do
+    for name, coins in pairs(SpiderCoin.coins) do
         if type(coins) == "number" and coins > 0 then
             table.insert(list, name)
         end
@@ -190,7 +190,7 @@ local function GetPlayerList()
     return list
 end
 
-local playerListFrame = CreateFrame("Frame", "SSC_PlayerList", frame)
+local playerListFrame = CreateFrame("Frame", "SPC_PlayerList", frame)
 playerListFrame:SetWidth(200)
 playerListFrame:SetHeight(200)
 playerListFrame:SetPoint("TOPLEFT", 20, -80)
@@ -203,19 +203,19 @@ playerListFrame:SetBackdrop({
 playerListFrame:Hide()
 
 -- Scroll frame
-local scrollFrame = CreateFrame("ScrollFrame", "SSC_PlayerScrollFrame", playerListFrame)
+local scrollFrame = CreateFrame("ScrollFrame", "SPC_PlayerScrollFrame", playerListFrame)
 scrollFrame:SetWidth(170)
 scrollFrame:SetHeight(180)
 scrollFrame:SetPoint("TOPLEFT", 10, -10)
 
 -- Scroll child (content frame)
-local scrollChild = CreateFrame("Frame", "SSC_PlayerScrollChild", scrollFrame)
+local scrollChild = CreateFrame("Frame", "SPC_PlayerScrollChild", scrollFrame)
 scrollChild:SetWidth(170)
 scrollChild:SetHeight(1)
 scrollFrame:SetScrollChild(scrollChild)
 
 -- Scroll bar
-local scrollBar = CreateFrame("Slider", "SSC_PlayerScrollBar", scrollFrame)
+local scrollBar = CreateFrame("Slider", "SPC_PlayerScrollBar", scrollFrame)
 scrollBar:SetPoint("TOPRIGHT", playerListFrame, "TOPRIGHT", -5, -15)
 scrollBar:SetPoint("BOTTOMRIGHT", playerListFrame, "BOTTOMRIGHT", -5, 15)
 scrollBar:SetWidth(16)
@@ -259,7 +259,7 @@ local function UpdatePlayerList()
     -- Create or update buttons
     for i = 1, numPlayers do
         if not playerButtons[i] then
-            local btn = CreateFrame("Button", "SSC_PlayerBtn"..i, scrollChild)
+            local btn = CreateFrame("Button", "SPC_PlayerBtn"..i, scrollChild)
             btn:SetWidth(160)
             btn:SetHeight(20)
             btn:SetPoint("TOPLEFT", 5, -((i-1)*20))
@@ -284,7 +284,7 @@ local function UpdatePlayerList()
     end
 end
 
-local selectPlayerBtn = CreateFrame("Button", "SSC_SelectPlayer", frame, "UIPanelButtonTemplate")
+local selectPlayerBtn = CreateFrame("Button", "SPC_SelectPlayer", frame, "UIPanelButtonTemplate")
 selectPlayerBtn:SetWidth(100)
 selectPlayerBtn:SetHeight(22)
 selectPlayerBtn:SetPoint("LEFT", playerText, "RIGHT", 10, 0)
@@ -306,7 +306,7 @@ local amountLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 amountLabel:SetPoint("TOPLEFT", 20, -410)
 amountLabel:SetText("Amount:")
 
-local amountBox = CreateFrame("EditBox", "SSC_AmountBox", frame, "InputBoxTemplate")
+local amountBox = CreateFrame("EditBox", "SPC_AmountBox", frame, "InputBoxTemplate")
 amountBox:SetWidth(60)
 amountBox:SetHeight(20)
 amountBox:SetPoint("LEFT", amountLabel, "RIGHT", 10, 0)
@@ -321,7 +321,7 @@ local topLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 topLabel:SetPoint("TOPLEFT", 240, -50)
 topLabel:SetText("Top Holders")
 
-local topFrame = CreateFrame("Frame", "SSC_TopFrame", frame)
+local topFrame = CreateFrame("Frame", "SPC_TopFrame", frame)
 topFrame:SetWidth(160)
 topFrame:SetHeight(320)
 topFrame:SetPoint("TOPLEFT", 240, -75)
@@ -333,19 +333,19 @@ topFrame:SetBackdrop({
 })
 
 -- Scroll frame for top holders
-local topScrollFrame = CreateFrame("ScrollFrame", "SSC_TopScrollFrame", topFrame)
+local topScrollFrame = CreateFrame("ScrollFrame", "SPC_TopScrollFrame", topFrame)
 topScrollFrame:SetWidth(130)
 topScrollFrame:SetHeight(300)
 topScrollFrame:SetPoint("TOPLEFT", 8, -8)
 
 -- Scroll child for top holders
-local topScrollChild = CreateFrame("Frame", "SSC_TopScrollChild", topScrollFrame)
+local topScrollChild = CreateFrame("Frame", "SPC_TopScrollChild", topScrollFrame)
 topScrollChild:SetWidth(130)
 topScrollChild:SetHeight(1)
 topScrollFrame:SetScrollChild(topScrollChild)
 
 -- Scroll bar for top holders
-local topScrollBar = CreateFrame("Slider", "SSC_TopScrollBar", topScrollFrame)
+local topScrollBar = CreateFrame("Slider", "SPC_TopScrollBar", topScrollFrame)
 topScrollBar:SetPoint("TOPRIGHT", topFrame, "TOPRIGHT", -5, -15)
 topScrollBar:SetPoint("BOTTOMRIGHT", topFrame, "BOTTOMRIGHT", -5, 15)
 topScrollBar:SetWidth(16)
@@ -367,7 +367,7 @@ local topLines = {}
 
 local function UpdateTop15()
     local list = {}
-    for name, coins in pairs(SecretSpiderCoin.coins) do
+    for name, coins in pairs(SpiderCoin.coins) do
         if type(coins) == "number" then
             table.insert(list, {name=name, coins=coins})
         end
@@ -427,7 +427,7 @@ statusText:SetText("")
 -----------------------------------
 -- Add / Remove Buttons
 -----------------------------------
-local addBtn = CreateFrame("Button", "SSC_AddBtn", frame, "UIPanelButtonTemplate")
+local addBtn = CreateFrame("Button", "SPC_AddBtn", frame, "UIPanelButtonTemplate")
 addBtn:SetWidth(80)
 addBtn:SetHeight(22)
 addBtn:SetPoint("TOPLEFT", 20, -460)
@@ -444,7 +444,7 @@ addBtn:SetScript("OnClick", function()
     end
 end)
 
-local removeBtn = CreateFrame("Button", "SSC_RemoveBtn", frame, "UIPanelButtonTemplate")
+local removeBtn = CreateFrame("Button", "SPC_RemoveBtn", frame, "UIPanelButtonTemplate")
 removeBtn:SetWidth(80)
 removeBtn:SetHeight(22)
 removeBtn:SetPoint("LEFT", addBtn, "RIGHT", 10, 0)
@@ -474,7 +474,7 @@ local chatText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 chatText:SetPoint("LEFT", chatLabel, "RIGHT", 5, 0)
 chatText:SetText("GUILD")
 
-local chatBtn = CreateFrame("Button", "SSC_ChatBtn", frame, "UIPanelButtonTemplate")
+local chatBtn = CreateFrame("Button", "SPC_ChatBtn", frame, "UIPanelButtonTemplate")
 chatBtn:SetWidth(70)
 chatBtn:SetHeight(22)
 chatBtn:SetPoint("LEFT", chatText, "RIGHT", 5, 0)
@@ -496,7 +496,7 @@ end)
 -----------------------------------
 -- Add/Announce & Remove/Announce Buttons
 -----------------------------------
-local addAnnounceBtn = CreateFrame("Button", "SSC_AddAnnounceBtn", frame, "UIPanelButtonTemplate")
+local addAnnounceBtn = CreateFrame("Button", "SPC_AddAnnounceBtn", frame, "UIPanelButtonTemplate")
 addAnnounceBtn:SetWidth(100)
 addAnnounceBtn:SetHeight(22)
 addAnnounceBtn:SetPoint("TOPLEFT", addBtn, "BOTTOMLEFT", 0, -5)
@@ -511,12 +511,12 @@ addAnnounceBtn:SetScript("OnClick", function()
         UpdateTop15()
         
         -- Announce to chat
-        local message = selectedPlayer.." has gained "..amt.." Secret Spider Coin ("..newTotal.." total)"
+        local message = selectedPlayer.." has gained "..amt.." Spider Coin ("..newTotal.." total)"
         local currentChat = chatText:GetText()
         
         if currentChat == "WHISPER" then
-            if SecretSpiderCoin.lastWhisper and SecretSpiderCoin.lastWhisper ~= "" then
-                SendChatMessage(message, "WHISPER", nil, SecretSpiderCoin.lastWhisper)
+            if SpiderCoin.lastWhisper and SpiderCoin.lastWhisper ~= "" then
+                SendChatMessage(message, "WHISPER", nil, SpiderCoin.lastWhisper)
             else
                 statusText:SetText("No whisper target set")
             end
@@ -528,7 +528,7 @@ addAnnounceBtn:SetScript("OnClick", function()
     end
 end)
 
-local removeAnnounceBtn = CreateFrame("Button", "SSC_RemoveAnnounceBtn", frame, "UIPanelButtonTemplate")
+local removeAnnounceBtn = CreateFrame("Button", "SPC_RemoveAnnounceBtn", frame, "UIPanelButtonTemplate")
 removeAnnounceBtn:SetWidth(100)
 removeAnnounceBtn:SetHeight(22)
 removeAnnounceBtn:SetPoint("LEFT", addAnnounceBtn, "RIGHT", 10, 0)
@@ -543,12 +543,12 @@ removeAnnounceBtn:SetScript("OnClick", function()
         UpdateTop15()
         
         -- Announce to chat
-        local message = selectedPlayer.." has lost "..amt.." Secret Spider Coin ("..newTotal.." total)"
+        local message = selectedPlayer.." has lost "..amt.." Spider Coin ("..newTotal.." total)"
         local currentChat = chatText:GetText()
         
         if currentChat == "WHISPER" then
-            if SecretSpiderCoin.lastWhisper and SecretSpiderCoin.lastWhisper ~= "" then
-                SendChatMessage(message, "WHISPER", nil, SecretSpiderCoin.lastWhisper)
+            if SpiderCoin.lastWhisper and SpiderCoin.lastWhisper ~= "" then
+                SendChatMessage(message, "WHISPER", nil, SpiderCoin.lastWhisper)
             else
                 statusText:SetText("No whisper target set")
             end
@@ -563,7 +563,7 @@ end)
 -----------------------------------
 -- Top 10 Button
 -----------------------------------
-local topBtn = CreateFrame("Button", "SSC_TopBtn", frame, "UIPanelButtonTemplate")
+local topBtn = CreateFrame("Button", "SPC_TopBtn", frame, "UIPanelButtonTemplate")
 topBtn:SetWidth(120)
 topBtn:SetHeight(22)
 topBtn:SetPoint("TOP", -65, -520)
@@ -571,7 +571,7 @@ topBtn:SetText("Say Top 10")
 
 topBtn:SetScript("OnClick", function()
     local list = {}
-    for name, coins in pairs(SecretSpiderCoin.coins) do
+    for name, coins in pairs(SpiderCoin.coins) do
         if type(coins) == "number" then
             table.insert(list, {name=name, coins=coins})
         end
@@ -588,16 +588,16 @@ topBtn:SetScript("OnClick", function()
     if table.getn(list) < 10 then maxEntries = table.getn(list) end
 
     if chatTarget == "WHISPER" then
-        if SecretSpiderCoin.lastWhisper and SecretSpiderCoin.lastWhisper ~= "" then
-            SendChatMessage("Top Secret Spider Coin Holders:", "WHISPER", nil, SecretSpiderCoin.lastWhisper)
+        if SpiderCoin.lastWhisper and SpiderCoin.lastWhisper ~= "" then
+            SendChatMessage("Top Spider Coin Holders:", "WHISPER", nil, SpiderCoin.lastWhisper)
             for i = 1, maxEntries do
-                SendChatMessage(i..". "..list[i].name.." - "..list[i].coins, "WHISPER", nil, SecretSpiderCoin.lastWhisper)
+                SendChatMessage(i..". "..list[i].name.." - "..list[i].coins, "WHISPER", nil, SpiderCoin.lastWhisper)
             end
         else
             statusText:SetText("No whisper target set. Type a name in chat.")
         end
     else
-        SendChatMessage("Top Secret Spider Coin Holders:", chatTarget)
+        SendChatMessage("Top Spider Coin Holders:", chatTarget)
         for i = 1, maxEntries do
             SendChatMessage(i..". "..list[i].name.." - "..list[i].coins, chatTarget)
         end
@@ -607,7 +607,7 @@ end)
 -----------------------------------
 -- Say Player Balance Button
 -----------------------------------
-local balanceBtn = CreateFrame("Button", "SSC_BalanceBtn", frame, "UIPanelButtonTemplate")
+local balanceBtn = CreateFrame("Button", "SPC_BalanceBtn", frame, "UIPanelButtonTemplate")
 balanceBtn:SetWidth(120)
 balanceBtn:SetHeight(22)
 balanceBtn:SetPoint("TOP", 65, -520)
@@ -616,12 +616,12 @@ balanceBtn:SetText("Say Balance")
 balanceBtn:SetScript("OnClick", function()
     if selectedPlayer then
         local currentCoins = GetCoins(selectedPlayer)
-        local message = selectedPlayer.." has "..currentCoins.." Secret Spider Coin"
+        local message = selectedPlayer.." has "..currentCoins.." Spider Coin"
         local currentChat = chatText:GetText()
         
         if currentChat == "WHISPER" then
-            if SecretSpiderCoin.lastWhisper and SecretSpiderCoin.lastWhisper ~= "" then
-                SendChatMessage(message, "WHISPER", nil, SecretSpiderCoin.lastWhisper)
+            if SpiderCoin.lastWhisper and SpiderCoin.lastWhisper ~= "" then
+                SendChatMessage(message, "WHISPER", nil, SpiderCoin.lastWhisper)
             else
                 statusText:SetText("No whisper target set")
             end
@@ -636,7 +636,7 @@ end)
 -----------------------------------
 -- Minimap Button
 -----------------------------------
-local mini = CreateFrame("Button", "SSC_MinimapButton", Minimap)
+local mini = CreateFrame("Button", "SPC_MinimapButton", Minimap)
 mini:SetWidth(32)
 mini:SetHeight(32)
 mini:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -10, 10)
@@ -653,7 +653,7 @@ end)
 
 mini:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_LEFT")
-    GameTooltip:SetText("SecretSpiderCoin", 1, 1, 1)
+    GameTooltip:SetText("SpiderCoin", 1, 1, 1)
     GameTooltip:AddLine("The only accepted coin of the village springdu", nil, nil, nil, 1)
     GameTooltip:Show()
 end)
@@ -665,8 +665,8 @@ end)
 -----------------------------------
 -- Slash Command
 -----------------------------------
-SLASH_SECRETSPIDERCOIN1 = "/ssc"
-SlashCmdList["SECRETSPIDERCOIN"] = function(msg)
+SLASH_SPIDERCOIN1 = "/spc"
+SlashCmdList["SPIDERCOIN"] = function(msg)
     if msg == "show" then
         frame:Show()
     end
@@ -685,17 +685,17 @@ eventFrame:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
 eventFrame:RegisterEvent("CHAT_MSG_ADDON")
 
 eventFrame:SetScript("OnEvent", function()
-    if event == "ADDON_LOADED" and arg1 == "SecretSpiderCoin" then
+    if event == "ADDON_LOADED" and arg1 == "SpiderCoin" then
         LoadData()
         UpdateTop15()
     elseif event == "PLAYER_LOGOUT" or event == "PLAYER_LEAVING_WORLD" or event == "PLAYER_QUITING" then
         SaveData()
     elseif event == "CHAT_MSG_WHISPER" then
         -- Incoming whisper
-        SecretSpiderCoin.lastWhisper = arg2
+        SpiderCoin.lastWhisper = arg2
     elseif event == "CHAT_MSG_WHISPER_INFORM" then
         -- Outgoing whisper
-        SecretSpiderCoin.lastWhisper = arg2
+        SpiderCoin.lastWhisper = arg2
     elseif event == "CHAT_MSG_ADDON" then
         -- Handle addon communication
         local prefix = arg1
@@ -703,10 +703,10 @@ eventFrame:SetScript("OnEvent", function()
         local channel = arg3
         local sender = arg4
         
-        if prefix == "SSC_REQUEST" and message == "GETDATA" then
+        if prefix == "SPC_REQUEST" and message == "GETDATA" then
             -- Someone is requesting our coin data
             local response = ""
-            for name, coins in pairs(SecretSpiderCoin.coins) do
+            for name, coins in pairs(SpiderCoin.coins) do
                 if type(coins) == "number" then
                     if response ~= "" then
                         response = response..";"
@@ -717,7 +717,7 @@ eventFrame:SetScript("OnEvent", function()
             
             -- Send response back
             if response ~= "" then
-                SendAddonMessage("SSC_RESPONSE", response, channel)
+                SendAddonMessage("SPC_RESPONSE", response, channel)
             end
         end
     end
