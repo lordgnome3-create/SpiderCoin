@@ -688,9 +688,6 @@ eventFrame:SetScript("OnEvent", function()
     if event == "ADDON_LOADED" and arg1 == "SecretSpiderCoin" then
         LoadData()
         UpdateTop15()
-        -- Register addon message prefixes
-        RegisterAddonMessagePrefix("SSC_REQUEST")
-        RegisterAddonMessagePrefix("SSC_RESPONSE")
     elseif event == "PLAYER_LOGOUT" or event == "PLAYER_LEAVING_WORLD" or event == "PLAYER_QUITING" then
         SaveData()
     elseif event == "CHAT_MSG_WHISPER" then
