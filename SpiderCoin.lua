@@ -739,19 +739,18 @@ eventFrame:SetScript("OnEvent", function()
                     return
                 end
                 
-                -- Initialize coins if they don't exist
-                if not SpiderCoin.coins[senderName] then
-                    SpiderCoin.coins[senderName] = 0
-                end
-                if not SpiderCoin.coins[recipientName] then
-                    SpiderCoin.coins[recipientName] = 0
-                end
+                -- Get sender balance (default to 0 if not found)
+                local senderBalance = SpiderCoin.coins[senderName] or 0
                 
                 -- Check if sender has enough coins
-                local senderBalance = SpiderCoin.coins[senderName]
                 if senderBalance < amount then
                     SendAddonMessage("SPC_TRANSFER_CONFIRM", "FAILED:"..senderName.." has insufficient funds ("..senderBalance.." available)", "GUILD")
                     return
+                end
+                
+                -- Initialize recipient if they don't exist (sender already exists if they have balance)
+                if not SpiderCoin.coins[recipientName] then
+                    SpiderCoin.coins[recipientName] = 0
                 end
                 
                 -- Process transfer
