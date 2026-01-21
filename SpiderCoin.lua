@@ -719,6 +719,47 @@ eventFrame:SetScript("OnEvent", function()
             if response ~= "" then
                 SendAddonMessage("SPC_RESPONSE", response, channel)
             end
+            
+        elseif prefix == "SPC_TRANSFER" then
+            -- Handle transfer request from SpiderMarketplace
+            -- Format: "TRANSFER:sender:recipient:amount"
+            local parts = {}
+            for part in string.gfind(message, "[^:]+") do
+                table.insert(parts, part)
+            end
+            
+            if table.getn(parts) >= 4 and parts[1] == "TRANSFER" then
+                local senderName = parts[2]
+                local recipientName = parts[3]
+                local amount = tonumber(parts[4])
+                
+                -- Validate
+                if not amount or amount <= 0 then
+                    SendAddonMessage("SPC_TRANSFER_CONFIRM", "FAILED:Invalid amount", "GUILD")
+                    return
+                end
+                
+                -- Check if sender has enough coins
+                local senderBalance = GetCoins(senderName)
+                if senderBalance < amount then
+                    SendAddonMessage("SPC_TRANSFER_CONFIRM", "FAILED:"..senderName.." has insufficient funds ("..senderBalance.." available)", "GUILD")
+                    return
+                end
+                
+                -- Process transfer
+                RemoveCoins(senderName, amount)
+                AddCoins(recipientName, amount)
+                
+                -- Send confirmation
+                local confirmMsg = "SUCCESS:"..senderName..":"..recipientName..":"..amount
+                SendAddonMessage("SPC_TRANSFER_CONFIRM", confirmMsg, "GUILD")
+                
+                -- Announce in guild chat (optional)
+                SendChatMessage(senderName.." sent "..amount.." Spider Coin to "..recipientName.." (confirmed)", "GUILD")
+                
+                -- Update display
+                UpdateTop15()
+            end
         end
     end
 end)
